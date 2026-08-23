@@ -2,7 +2,7 @@
 
 An EDR-style triage tool built on Ubuntu that monitors clipboard URLs and `~/Downloads` in real time, querying VirusTotal v3 and automatically deleting malicious files[cite: 2].
 
-📄 **[Read Full Project Report (PDF)](./Technical%20Project%20Report%20Mini%20SOC%20GITHUB.pdf)**
+📄 **[Read Full Project Report (PDF)**
 
 ## Tech Stack
 * Python 3 (`requests`, `pyperclip`, `watchdog`, `python-dotenv`)[cite: 2]
