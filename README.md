@@ -1,24 +1,53 @@
 # Automated-Real-Time-Mini-Security-Triage-Station
 
-An EDR-style triage tool built on Ubuntu that monitors clipboard URLs and `~/Downloads` in real time, querying VirusTotal v3 and automatically deleting malicious files[cite: 2].
+**Technical Project Report: Automated Real-Time Mini-Security Triage Station**
 
-📄 **[Read Full Project Report (PDF)**
+By: Lakunsin
 
-## Tech Stack
-* Python 3 (`requests`, `pyperclip`, `watchdog`, `python-dotenv`)[cite: 2]
-* Linux Utilities (`xclip`, `xsel`, `notify-send`)[cite: 2]
-* VirusTotal v3 API[cite: 2]
+Entry-Level Cybersecurity Analyst
 
-## Quick Start
+July 2026
+
+**Executive Summary**
+
+This report documents the design, implementation, and refinement of an automated Mini-Security Triage Station deployed within a Linux environment (Ubuntu VM). The system provides Security Operations Center (SOC) style real-time analysis by bridging local OS telemetry with the Virustotal v3 API. By combining automated clipboard monitoring (xclip + Regex optimization) and real-time filesystem observation (watchdog), the triage station instantly checks copied URLs/domains and newly downloaded files against global threat intelligence databases, utilizing desktop notifications (notify-send) and an automated quarantine/deletion policy for verified malicious files.
+
+---
+
+**System Architecture**
+
+This triage station relies on a combination of native Linux utilities, configuration files, and Python scripts working together:
+
+·       **Clipboard Utility (xclip)**: A lightweight background Linux tool that allows the system to read clipboard memory. It spies on copied text so that links or domains can be automatically processed.
+
+·       **Desktop Notification Tool (notify-send)**: A native Linux utility that generates instant desktop pop-up alerts. This is used to immediately inform the user of VirusTotal scan results without needing the terminal open.
+
+·       **Secure Configuration File (.env)**: A hidden file used to store the private VirusTotal API key. This keeps sensitive credentials secure and separate from the source code.
+
+·       **Python Dependencies:**
+
+- **pyperclip**: Allows Python to interact directly with the clipboard.
+- **requests**: Used to send and retrieve data from the VirusTotal API.
+- **python-dotenv**: Enables Python to securely read credentials from the .env file.
+- **watchdog**: Monitors the target directory for filesystem changes.
+
+·       **The Scanning Core (scanner.py)**: The engine of the project. It handles the communication with VirusTotal, analyses URLs and file hashes, coordinates desktop notifications, and executes the auto-deletion logic.
+
+·       **The Clipboard Watcher (clipboard_watcher.py):** A background script that continually checks the clipboard, uses a regular expression to extract URLs or naked domains and forwards them to the scanner.
+
+·       **The Directory Observer (downloads_monitor.py)**: A background script that watches the local _~/Downloads folder_. The moment a new file is fully written to the disk, it triggers the scanning core to evaluate the file's hash.
+
+**Phase 1: Automated Clipboard Monitoring with VirusTotal API**
+
+**Step 1: Installing the Linux Clipboard Utility (xclip)**
+
+To allow the background process to monitor clipboard memory and capture copied URL/links, install the lightweight clipboard manager xclip
+
+Open the terminal and run this command to install it:
 ```bash
-# 1. Install dependencies
-sudo apt update && sudo apt install xclip xsel -y
-pip3 install requests python-dotenv pyperclip watchdog
+```
+**sudo apt update**
 
-# 2. Add API key to .env
-echo "VT_API_KEY=your_key_here" > .env
-
-# 3. Run watchers
-python3 clipboard_watcher.py
-python3 downloads_monitor.py
+**sudo apt install xclip -y**
+```
 ```
