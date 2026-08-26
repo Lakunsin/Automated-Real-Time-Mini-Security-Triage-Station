@@ -647,9 +647,6 @@ Save**:** Ctrl + O, Enter
 
 Exit: Ctrl + X
 
-![Image](./Screenshots/18File1.png)
-
-
 ![Image](./Screenshots/19File2.png)
 
 **Step 14: Start the Downloads Monitor**
