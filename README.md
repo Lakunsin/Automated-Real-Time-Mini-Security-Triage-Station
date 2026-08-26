@@ -51,3 +51,4 @@ Open the terminal and run this command to install it:
 **sudo apt install xclip -y**
 ```
 ```
+![Image](./Screenshots/1xclip_ install.png)
