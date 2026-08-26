@@ -54,3 +54,15 @@ Open the terminal and run this command to install it:
 
 ![Image](./Screenshots/1xclip_install.png)
 
+**Step 2: Installing the Desktop Notification Tool (notify-send)**
+
+To display scan alerts on your screen in real time without relying on an open terminal window, verify that your system is equipped with notify-send
+
+Run this command:
+```bash
+```
+**notify-send "SOC Triage Station" "Testing desktop notification system..."**
+```
+```
+
+![Image](./Screenshots/2popup_tool.png)
