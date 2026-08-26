@@ -66,3 +66,56 @@ Run this command:
 ```
 
 ![Image](./Screenshots/2popup_tool.png)
+
+**Step 3: Create a Fresh Project Directory**
+
+To keep the triage system organized, a dedicated project directory is created:
+
+Run this command to create the folder and move inside it:
+```bash
+```
+**mkdir -p ~/security_triage**
+
+**cd ~/security_triage**
+```
+```
+(Verify that your terminal prompt changes to show ~/security_triage before moving forward.)
+
+![Image](./Screenshots/3Fresh_directory.png)
+
+**Step 4: Create the Secure Configuration File (.env)**
+
+To query VirusTotal safely, a private API key is required. To protect this key from exposure in your scripts, save it as an environment variable in a hidden .env file
+
+Run this command:
+```bash
+```
+**nano .env**
+```
+```
+Inside the nano editor, paste your API key matching this format
+
+**VT_API_KEY=YOUR_ACTUAL_API_KEY_HERE**
+
+Save (Press Ctrl + O, the press Enter)
+
+Exit (Press Ctrl + X)
+
+![Image](./Screenshots/4VT_API_KEY.png)
+
+
+![Image](./Screenshots/2popup_tool.png)
+
+![Image](./Screenshots/2popup_tool.png)
+
+![Image](./Screenshots/2popup_tool.png)
+
+![Image](./Screenshots/2popup_tool.png)
+
+![Image](./Screenshots/2popup_tool.png)
+
+![Image](./Screenshots/2popup_tool.png)
+
+![Image](./Screenshots/2popup_tool.png)
+
+![Image](./Screenshots/2popup_tool.png)
