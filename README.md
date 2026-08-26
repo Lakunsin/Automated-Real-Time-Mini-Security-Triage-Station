@@ -52,5 +52,5 @@ Open the terminal and run this command to install it:
 ```
 ```
 
-![image](screenshots/1xclip_install.png)
+![image](Screenshots/1xclip_install.png)
 
