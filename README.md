@@ -480,20 +480,340 @@ To:
 
 ![Image](./Screenshots/13D.png)
 
+ii.                   Still under _def_ _check_vt_
+
+Change:
+
+**def check_vt(endpoint, target_id, label):**
+
+To:
+```bash
+```
+**def check_vt(endpoint, target_id, label, original_value=None):**
+```
+```
+
+![Image](./Screenshots/14G.png)
+
+iii.                 URL part
+
+Under _def scan URL_
+
+Change:
+
+**check_vt("urls", url_id, "URL")**
+
+To:
+```bash
+```
+**check_vt("urls", url_id, "URL", url)**
+```
+```
+
+![Image](./Screenshots/15E.png)
+
+iv.                 Update notify line
+
+Change:
+
+**notify(f"VT RESULT: {verdict}", f"{msg}\n\nLINK: {label}")**
+
+To:
+```bash
+```
+**notify(f"VT RESULT: {verdict}", f"{msg}\n\nLINK: {original_value or label}")**
+```
+```
+Save**:** Ctrl + O, Enter
+
+Exit: Ctrl + X
+
+![Image](./Screenshots/16H.png)
+
+**Test the fixes**
+
+Run the watcher:
+```bash
+```
+**python3 clipboard_watcher.py**
+```
+```
+Copy a naked domain and verify the link shows in the popup message.
+
+Press Ctrl C to stop watcher.
+
+![Image](./Screenshots/Firefox3.png)
+
+![Image](./Screenshots/17Confirmed.png)
+
+**Phase 2: File Download Monitoring and Malware Containment**
+
+Whenever a file hits the Downloads folder, the station will hash it, scan it via Virustotal, and automatically delete it if it is flagged as malicious by 3 or more vendors.
+
+**Step 11 — Install file monitoring tool**
+
+Use watchdog. This allows Python to:
+
+·       watch the Downloads folder in real time
+
+·       detect new files instantly
+
+·       trigger Virustotal scanner automatically
+
+Run this:
+```
+```
+**pip3 install watchdog**
+```
+```
+
+![Image](./Screenshots/18File1.png)
+
+Confirm the Downloads folder exists before the next step
+```bash
+```
+**ls ~/Downloads**
+```
+```
+**Step 12**: **Create File Download Monitor (downloads_monitor.py)**
+
+Now create the file monitoring script that uses watchdog to continuously observe your ~/Downloads directory for any new files.
+
+Run this command:
+```bash
+```
+**nano downloads_monitor.py**
+```
+```
+Paste this code into downloads_monitor.py
+```python
+```
+**from watchdog.observers import Observer**
+
+**from watchdog.events import FileSystemEventHandler**
+
+**import subprocess**
+
+**import time**
+
+**import os**
+
+**DOWNLOADS = os.path.expanduser("~/Downloads")**
+
+**class DownloadHandler(FileSystemEventHandler):**
+
+    **def on_created(self, event):**
+
+        **if event.is_directory:**
+
+            **return**
+
+        **print(f"[+] New file detected: {event.src_path}")**
+
+        **subprocess.run([**
+
+            **"python3",**
+
+            **"scanner.py",**
+
+            **"--file",**
+
+            **event.src_path**
+
+        **])**
+
+**observer = Observer()**
+
+**observer.schedule(DownloadHandler(), DOWNLOADS, recursive=False)**
+
+**print(f"Monitoring: {DOWNLOADS}")**
+
+**observer.start()**
+
+**try:**
+
+    **while True:**
+
+        **time.sleep(1)**
+
+**except KeyboardInterrupt:**
+
+    **observer.stop()**
+
+**observer.join()**
+```
+```
+Save**:** Ctrl + O, Enter
+
+Exit: Ctrl + X
+
+![Image](./Screenshots/18File1.png)
 
 
-![Image](./Screenshots/2popup_tool.png)
+![Image](./Screenshots/19File2.png)
 
+**Step 14: Start the Downloads Monitor**
 
-![Image](./Screenshots/2popup_tool.png)
+Start the background watcher script to observe your ~/Downloads directory for any newly dropped files.
 
+Run:
+```bash
+```
+**python3 downloads_monitor.py**
+```
+```
+You should see the startup log:
 
-![Image](./Screenshots/2popup_tool.png)
+_Monitoring: /home/osboxes/Downloads_ meaning the monitor is running and watching
 
+**Create a test file in Downloads**
 
-![Image](./Screenshots/2popup_tool.png)
+Open a second terminal (leave the first terminal running).
 
+In the second terminal, run:
+```bash
+```
+**touch ~/Downloads/test_download.txt**
+```
+```
+You should get this in the first terminal:
 
-![Image](./Screenshots/2popup_tool.png)
+_[+] New file detected: /home/osboxes/Downloads/test_download.txt_
 
+And a popup message showing:
 
+_VT RESULT: SAFE_
+
+_FILE: clean (0 engines) PATH: /home/osboxes/Downloads/test_download.txt_
+
+Ctrl C to stop
+
+![Image](./Screenshots/20File_detected.png)
+
+**Step 15 — Add SAFE delete function**
+
+Add a dedicated containment function that safely handles automated file removal when a threat is identified.
+
+a.      Open the scanner:
+```bash
+```
+**nano scanner.py**
+```
+```
+Add this function between _def notify() and def check_vt()_
+```python
+```
+**def safe_delete_file(file_path, malicious_count):**
+
+    **print(f"[DEBUG] delete called with: {file_path} | count={malicious_count}")**
+
+    **if malicious_count is None or malicious_count < 3:**
+
+        **return**
+
+    **if file_path and os.path.exists(file_path):**
+
+        **try:**
+
+            **os.remove(file_path)**
+
+            **# Extract just the clean file name for the deletion alert popup**
+
+            **short_name = os.path.basename(file_path)**
+
+            **notify(**
+
+                **"** **⚠️  FILE DELETED",**
+
+                **f"Malicious file removed:\n{short_name}"**
+
+            **)**
+
+        **except Exception as e:**
+
+            **notify("DELETE FAILED", str(e))**
+```
+```
+
+![Image](./Screenshots/21Delfil.png)
+
+b.      Update the _check_vt_ function logic
+
+To trigger _safe_delete_file_ whenever VirusTotal returns **3 or more malicious flags** for a scanned file. Inside the _check_vt_ function, find this exact block of code:
+
+**if malicious > 0:**
+
+                **verdict = "MALICIOUS"**
+
+                **msg = f"{label}: {malicious} engines flagged it"**
+
+Replace with
+```python
+```
+**if malicious >= 3:**
+
+       **verdict = "MALICIOUS"**
+
+       **# Format clean file name for the popup if it's a file path**
+
+       **if label == "FILE" and original_value:**
+
+            **display_name = os.path.basename(original_value)**
+
+       **else:**
+
+             **display_name = original_value or target_id**
+
+       **msg = f"{display_name}: {malicious} engines flagged it (AUTO-DELETE)"**
+
+       **# Pass the full path to the background deletion logic**
+
+       **safe_delete_file(original_value, malicious)**
+
+   **elif malicious > 0:**
+
+         **verdict = "MALICIOUS"**
+
+         **msg = f"{label}: {malicious} engines flagged it"**
+```
+```
+Save**:** Ctrl + O, Enter
+
+Exit: Ctrl + X
+
+![Image](./Screenshots/22Delfil2.png)
+
+**Test**
+
+Put the entire automated pipeline to the test using the standard, harmless EICAR anti-malware test file. This simulates downloading a malicious file to verify that your script detects, hashes, queries, and automatically deletes the threat without any manual intervention.
+
+Start the download monitor script
+```bash
+```
+**python3 downloads_monitor.py**
+```
+```
+Use firefox browser or open a second terminal, Download **EICAR.COM.ZIP** from
+
+_https://www.eicar.org/download-anti-malware-testfile/_
+
+The terminal will show:
+
+_[DEBUG] delete called with: /home/osboxes/Downloads/eicar_com.zip_ | count=60
+
+The popup should show:
+
+_FILE DELETED  
+Malicious File removed: eicar_com.zip_
+
+Press Ctrl C in Terminal 1 to stop the monitor once verified.
+
+To confirm Virustotal flagged the hash and _safe_delete_file_ executed.
+
+Run _ls ~/Downloads/eicar.com.txt_ in Terminal 2. It will confirm the file is gone- _No such file or directory_.
+
+![Image](./Screenshots/23malfildeleted.png)
+
+**Conclusion**
+
+This lab brought together real-time file monitoring, Virustotal threat intelligence, and automated containment into a light EDR setup. By instantly hashing incoming downloads and deleting anything flagged as malicious, the system neutralizes threats on the spot without relying on manual checks. It turned out to be a solid, hands-on way to showcase automated incident response and endpoint defense in action.
