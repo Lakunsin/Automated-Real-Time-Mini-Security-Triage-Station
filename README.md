@@ -99,7 +99,7 @@ Inside the nano editor, paste your API key matching this format
 
 Save (Press Ctrl + O, the press Enter)
 
-Exit (Press Ctrl + X)
+Exit (Press Ctrl + X) 
 
 ![Image](./Screenshots/4VT_API_KEY.png)
 
